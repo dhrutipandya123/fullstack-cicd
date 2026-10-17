@@ -59,3 +59,35 @@ jobs:
 
       - name: Check Backend Syntax
         run: node --check server.js
+
+  docker-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    needs:
+      - frontend-build
+      - backend-check
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: dhruti2005/fullstack-frontend:latest
+
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: dhruti2005/fullstack-backend:latest
